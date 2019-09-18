@@ -5,6 +5,9 @@
 electron 学习指北，我希望可以花时间写出完整的一份学习的教程，并且可以附上一个完整的应用，作为开源项目维护，供大家直接使用。
 
 ### 一些入门教程
+> 完整的开发方案分享，帮助大家快速进行产品开发
+
++ [electron指北：寻找最简单健壮的electron工程构建方案](https://github.com/redredredredredred/electron-zhibei/issues/4)
 
 ### 一些基础实现
 + [electron指北：electron-windows-badge 进行任务栏&dock自定义徽标设置](https://github.com/redredredredredred/electron-zhibei/issues/3)
