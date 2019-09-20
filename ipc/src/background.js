@@ -1,6 +1,11 @@
 'use strict'
 import path from 'path'
-import {app, protocol, BrowserWindow} from 'electron'
+import {
+    app,
+    protocol,
+    BrowserWindow,
+    ipcMain
+} from 'electron'
 import {
     createProtocol,
     installVueDevtools
@@ -75,6 +80,15 @@ app.on('ready', async () => {
         }
     }
     createWindow()
+})
+
+ipcMain.on('update-bage', (event, text) => {
+    ipcRenderer.sendSync('update-badge', number)
+    this.remote.app.setBadgeCount(number)
+})
+
+ipcMain.once('update-bage-once', (event, text) => {
+
 })
 
 // Exit cleanly on request from parent process in development mode.

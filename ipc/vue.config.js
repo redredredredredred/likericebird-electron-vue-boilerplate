@@ -1,5 +1,6 @@
 const path = require('path');
 const merge = require('webpack-merge');
+const resolve = dir => require('path').join(__dirname, dir);
 
 module.exports = {
   lintOnSave: true,
@@ -90,6 +91,7 @@ module.exports = {
   configureWebpack: {
     resolve: {
       alias: {
+          '@': resolve('src')
       },
     },
     externals: {
