@@ -4,12 +4,14 @@ import {
     app,
     protocol,
     BrowserWindow,
-    ipcMain
+    ipcMain,
+    shell
 } from 'electron'
 import {
     createProtocol,
     installVueDevtools
 } from 'vue-cli-plugin-electron-builder/lib'
+import Badge from 'electron-windows-badge';
 
 const isDevelopment = process.env.NODE_ENV !== 'production'
 
@@ -39,6 +41,10 @@ function createWindow() {
         // Load the index.html when not in development
         win.loadURL('app://./index.html')
     }
+
+    // 初始化 下角标提示
+    const badgeOptions = {}
+    new Badge(win, badgeOptions);
 
     win.on('closed', () => {
         win = null
@@ -82,13 +88,14 @@ app.on('ready', async () => {
     createWindow()
 })
 
-ipcMain.on('update-bage', (event, text) => {
-    ipcRenderer.sendSync('update-badge', number)
-    this.remote.app.setBadgeCount(number)
+ipcMain.on('beep', (event, text) => {
+    shell.beep()
+    event.returnValue = '' // sendSync
 })
 
-ipcMain.once('update-bage-once', (event, text) => {
-
+ipcMain.once('beep-once', (event, text) => {
+    shell.beep()
+    event.returnValue = '' // sendSync
 })
 
 // Exit cleanly on request from parent process in development mode.

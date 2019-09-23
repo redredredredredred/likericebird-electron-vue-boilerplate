@@ -11,6 +11,10 @@
                 <button class="button-primary" @click="setBadgeText">点击改变徽章文本</button>
             </div>
 
+            <div>
+                <button class="button-primary" @click="beep">小声哔哔</button>
+            </div>
+
         </section>
     </div>
 
@@ -34,7 +38,11 @@
                 CustomNotification.setBadgeCount(this.BadgeCount)
             },
             setBadgeText: function () {
-                CustomNotification.setBadgeText(this.BadgeText)
+                CustomNotification.setBadgeText(`'${this.BadgeText}'`)
+            },
+            beep: function () {
+                CustomNotification.beep()
+                // CustomNotification.beepOnce()
             },
         }
     };
