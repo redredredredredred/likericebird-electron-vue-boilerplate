@@ -20,6 +20,7 @@
     "core-js": "^2.6.5",
     "electron-log": "^3.0.8",
     "electron-windows-badge": "^1.0.5",
+    "update-electron-app": "^1.5.0",
     "vue": "^2.6.10",
     "vue-router": "^3.0.3",
     "vuex": "^3.0.1"

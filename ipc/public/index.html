@@ -1,18 +1,30 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
+<head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width,initial-scale=1.0">
     <link rel="icon" href="<%= BASE_URL %>icon-design-guide.png">
     <link rel="shortcut icon" href="<%= BASE_URL %>icon-design-guide.png" type="image/x-icon"/>
     <title>ipc</title>
-  </head>
-  <body>
-    <noscript>
-      <strong>We're sorry but ipc doesn't work properly without JavaScript enabled. Please enable it to continue.</strong>
-    </noscript>
-    <div id="app"></div>
-    <!-- built files will be auto injected -->
-  </body>
+</head>
+<body>
+<noscript>
+    <strong>We're sorry but ipc doesn't work properly without JavaScript enabled. Please enable it to continue.</strong>
+</noscript>
+<div id="app"></div>
+<!-- built files will be auto injected -->
+<script async>
+
+    const {ipcRenderer} = require('electron')
+    const updateOnlineStatus = () => {
+        console.log(navigator.online ? 'online' : "offline")
+        ipcRenderer.send('online-status-changed', navigator.online ? 'online' : "offline")
+    }
+
+    window.addEventListener('online', updateOnlineStatus)
+    window.addEventListener('offline', updateOnlineStatus)
+    updateOnlineStatus()
+</script>
+</body>
 </html>

@@ -6,8 +6,10 @@ import {
     BrowserWindow,
     ipcMain,
     shell,
+    dialog,
     Tray,
-    Menu
+    Menu,
+    netLog
 } from "electron";
 import {
     createProtocol,
@@ -26,15 +28,17 @@ let badgeNum = 0
 
 // 主进程状态和配置管理
 let customConfig;
-if(process.platform === 'darwin'){
+if (process.platform === 'darwin') {
     customConfig = {
-        logoPath: "icon-design-guide.png",
-        tipsLogoPath: "icon-design-guide.png"
+        logoPath: "physics3.jpg",
+        tipsLogoPath: "physics3.jpg",
+        netLog:"/test/"
     }
-}else{
+} else {
     customConfig = {
-        logoPath: "favicon.ico",
-        tipsLogoPath: "favicon.ico"
+        logoPath: "physics3.jpg",
+        tipsLogoPath: "physics3.jpg",
+        netLog:"D:/test/"
     }
 }
 // Scheme must be registered before the app is ready
@@ -71,7 +75,7 @@ function createWindow() {
                 electronLogger.info('tray 关闭窗口')
                 if (process.platform === 'darwin') {
                     app.hide()
-                }else{
+                } else {
                     win.hide()
                 }
             }
@@ -114,18 +118,18 @@ function createWindow() {
     }
     // win.webContents.openDevTools()
 
-
+    win.setProgressBar(0.5)
 
     win.on('close', (e) => {
         electronLogger.info('win close')
         e.preventDefault();
-        if(win.isFocused()){
+        if (win.isFocused()) {
             if (process.platform === 'darwin') {
                 app.hide()
-            }else{
+            } else {
                 win.hide()
             }
-        }else{
+        } else {
             app.quit()
             app.exit()
         }
@@ -189,8 +193,17 @@ app.on("ready", async () => {
         }
     }
     createWindow();
+
+    // 进行ready 之后的操作管理
+    // netLog.startLogging(path.join(__static, customConfig.logoPath))
+    netLog.startLogging(customConfig.logoPath)
+
+    // // After some network events
+    // const path = await netLog.stopLogging()
+    // console.log('Net-logs written to', path)
 });
 
+// IPC 进程间通信
 ipcMain.on("beep", (event, text) => {
     shell.beep();
     event.returnValue = ""; // sendSync
@@ -204,13 +217,29 @@ ipcMain.once("beep-once", (event, text) => {
 
 ipcMain.on("update-badge", function (event, num) {
     badgeNum = num
-    if(num){
+    if (num) {
         tray.setImage(path.join(__static, "favicon1.png"))
-    }else{
+    } else {
         tray.setImage(path.join(__static, "favicon.png"))
     }
     event.returnValue = 'info'
 })
+
+ipcMain.on('online-status-changed', (event, status) => {
+    console.log(status)
+    showMessageBoxSync(win, status)
+})
+
+// 对话框组件
+
+function showMessageBoxSync(browserWindow, message) {
+    dialog.showMessageBoxSync(browserWindow, {
+        type: "none",
+        title: "用户提示",
+        // buttons: ['确认', '取消'],
+        message: message
+    })
+}
 
 // Exit cleanly on request from parent process in development mode.
 if (isDevelopment) {
