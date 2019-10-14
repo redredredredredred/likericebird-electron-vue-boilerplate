@@ -9,9 +9,14 @@ electron 学习指北，我希望可以花时间写出完整的一份学习的�
 
 + [electron指北：寻找最简单健壮的electron工程构建方案](https://github.com/redredredredredred/electron-zhibei/issues/4)
 
-### 一些基础实现
+### 一些常用实现
+
 + [electron指北：electron-windows-badge 进行任务栏&dock自定义徽标设置](https://github.com/redredredredredred/electron-zhibei/issues/3)
 + [electron指北：win.minimize() 窗口最小化的实现](https://github.com/redredredredredred/electron-zhibei/issues/2)
+
+### 一些实践研究
+
++ [electron应用签名：electron-builder Error: Command failed: codesign --sign](https://github.com/redredredredredred/electron-zhibei/issues/6)
 
 ### 常见的第三方库
 
