@@ -63,3 +63,4 @@ typings/
 ipc/yarn.lock
 ipc/package-lock.json
 auto-updater/yarn.lock
+yarn.lock
