@@ -1,0 +1,141 @@
+const path = require("path");
+const merge = require("webpack-merge");
+
+module.exports = {
+  lintOnSave: true,
+  publicPath: process.env.NODE_ENV === "production" ? "/" : "/",
+  productionSourceMap: false,
+  outputDir: path.resolve(__dirname, "./dist"),
+  indexPath: "index.html",
+  devServer: {
+    index: "index.html",
+    open: process.platform === "darwin",
+    port: 10844,
+    https: false,
+    hotOnly: false
+  },
+  pluginOptions: {
+    webpackBundleAnalyzer: {
+      // analyzerMode: process.env.NODE_ENV === "development" ? "server" : "disabled",
+      analyzerMode: false,
+      analyzerPort: 8099
+    },
+    electronBuilder: {
+      externals: ["my-native-dep"],
+      nodeModulesPath: ["../../node_modules", "./node_modules"],
+      // buildVersion:'2.3.2',
+      builderOptions: {
+        appId: "com.electron.zhibei",
+        productName: "electron-zhibei",
+        copyright: "copyright @ 2019 electron-zhibei",
+        artifactName: "electron-zhibei{version}.${ext}",
+        // compression: "maximum",
+        // "asar": true,
+        // asar: true,
+        // directories: {
+        //   output: "dist_electron"
+        // },
+        // files: [
+        //   "dist_electron/bundled/**/*"
+        // ],
+        dmg: {
+          contents: [
+            {
+              x: 410,
+              y: 150,
+              type: "link",
+              path: "/Applications"
+            },
+            {
+              x: 130,
+              y: 150,
+              type: "file"
+            }
+          ]
+        },
+        mac: {
+          category: "public.app-category.productivity",
+          // category: "public.app-category.social-networking",
+          icon: "build/icons/icon.icns",
+          target: ["dmg", "pkg", "zip", "mas"],
+          entitlements: "./build/entitlements.mac.plist",
+          entitlementsInherit: "./build/entitlements.mac.inherit.plist"
+          // bundleShortVersion:'50',
+          // extendInfo: {
+          //   "ElectronTeamID": "****"
+          // }
+        },
+        win: {
+          icon: "build/icons/icon.ico",
+          target: {
+            target: "nsis", // 打包为nsis安装文件,
+            arch: ["x64", "ia32"] // 支持32、64位的Windows系统
+          }
+        },
+        linux: {
+          icon: "build/icons/icon.ico"
+        },
+        mas: {
+          // type: "distribution",
+          category: "public.app-category.social-networking",
+          icon: "build/icons/icon.ico",
+          // provisioningProfile:"build/Mac_GoDap_Distribution.provisionprofile",
+          entitlements: "./build/entitlements.mas.plist",
+          entitlementsInherit: "./build/entitlements.mas.inherit.plist"
+          // extendInfo: {
+          //   // "ElectronTeamID": "****",
+          //   // bundleShortVersion:'50',
+          //   "com.apple.security.app-sandbox":true
+          // }
+        },
+        nsis: {
+          oneClick: false,
+          createDesktopShortcut: true,
+          createStartMenuShortcut: true,
+          menuCategory: false,
+          allowElevation: true,
+          allowToChangeInstallationDirectory: true,
+          runAfterFinish: true
+        }
+      }
+    }
+  },
+  css: {
+    loaderOptions: {
+      postcss: {
+        plugins: []
+      }
+    }
+  },
+
+  configureWebpack: {
+    resolve: {
+      alias: {
+        common: "@/common",
+        vue$: "vue/dist/vue.esm.js"
+      }
+    },
+    externals: {
+      "aws-sdk": "AWS"
+    }
+  },
+  assetsDir: undefined,
+  runtimeCompiler: true,
+  parallel: undefined,
+  chainWebpack: config => {
+    config.module
+      .rule("images")
+      .test(/\.(png|jpe?g|gif|webp)(\?.*)?$/)
+      .use("url-loader")
+      .loader("url-loader")
+      .tap(options =>
+        merge(options, {
+          limit: 10000
+        })
+      );
+
+    const svgRule = config.module.rule("svg");
+    svgRule.uses.clear();
+    svgRule.use("vue-svg-loader").loader("vue-svg-loader");
+  }
+};
