@@ -10,7 +10,7 @@ module.exports = {
   devServer: {
     index: "index.html",
     open: process.platform === "darwin",
-    port: 10844,
+    port: 10866,
     https: false,
     hotOnly: false
   },
@@ -79,7 +79,7 @@ module.exports = {
           // type: "distribution",
           category: "public.app-category.social-networking",
           icon: "build/icons/icon.ico",
-          // provisioningProfile:"build/Mac_GoDap_Distribution.provisionprofile",
+          // provisioningProfile:"build/Mac_Distribution.provisionprofile",
           entitlements: "./build/entitlements.mas.plist",
           entitlementsInherit: "./build/entitlements.mas.inherit.plist"
           // extendInfo: {
