@@ -1,4 +1,4 @@
-# electron-zhibei
+# electron-fans
 
 > 希望可以用简洁精炼的语言，直白的表述帮助其他人学习electron，为开放互联网社区的建设贡献一份绵薄之力
 
