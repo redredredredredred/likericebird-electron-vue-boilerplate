@@ -89,7 +89,7 @@ function createWindow() {
             }
         }
     ]);
-    tray.setToolTip("zhibei");
+    tray.setToolTip("fans");
     tray.setContextMenu(contextMenu);
 
     tray.on("click", function (event) {
@@ -159,6 +159,9 @@ function createWindow() {
     //     e.preventDefault();
     //     return false;
     // });
+
+  // window10 通知fix
+  app.setAppUserModelId("com.electron.fans")
 }
 
 // Quit when all windows are closed.
@@ -257,3 +260,9 @@ if (isDevelopment) {
         });
     }
 }
+
+// 捕获全局错误，进行进程管理
+process.on('uncaughtException', error => {
+  log.error(error.stack || JSON.stringify(error));
+  app.exit();
+});

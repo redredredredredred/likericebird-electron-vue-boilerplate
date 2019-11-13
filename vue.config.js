@@ -1,6 +1,8 @@
 const path = require("path");
 const merge = require("webpack-merge");
+const webpack = require("webpack");
 
+process.env.VUE_APP_VERSION = require("./package.json").version;
 module.exports = {
   lintOnSave: true,
   publicPath: process.env.NODE_ENV === "production" ? "/" : "/",
@@ -10,14 +12,13 @@ module.exports = {
   devServer: {
     index: "index.html",
     open: process.platform === "darwin",
-    port: 10866,
+    port: 10844,
     https: false,
     hotOnly: false
   },
   pluginOptions: {
     webpackBundleAnalyzer: {
-      // analyzerMode: process.env.NODE_ENV === "development" ? "server" : "disabled",
-      analyzerMode: false,
+      analyzerMode: "disabled",
       analyzerPort: 8099
     },
     electronBuilder: {
@@ -25,77 +26,74 @@ module.exports = {
       nodeModulesPath: ["../../node_modules", "./node_modules"],
       // buildVersion:'2.3.2',
       builderOptions: {
-        appId: "com.electron.zhibei",
-        productName: "electron-zhibei",
-        copyright: "copyright @ 2019 electron-zhibei",
-        artifactName: "electron-zhibei{version}.${ext}",
+        appId: "com.electron.fans",
+        productName: "fans",
+        copyright: "copyright @ 2019 fans",
+        // artifactName: "fans${version}.${ext}", // 安装包名
+        artifactName: "fans.${ext}", // 安装包名
         // compression: "maximum",
-        // "asar": true,
-        // asar: true,
+        asar: true,
         // directories: {
         //   output: "dist_electron"
         // },
         // files: [
-        //   "dist_electron/bundled/**/*"
+        //   ".dist/**/*"
         // ],
+        mac: {
+          type: "distribution",
+          category: "public.app-category.productivity",
+          icon: "build/icons/icon.jpg",
+          target: ["dmg", "pkg", "zip", "mas"]
+          // identity: "", // app开发者 groupid
+          // bundleVersion: '',
+          // extendInfo: {
+          //   "ElectronTeamID": ""
+          // }
+        },
+        mas: {
+          icon: "build/icons/icon.jpg",
+          // provisioningProfile: "build/App_Store_XC_Wildcard.provisionprofile",
+          entitlements: "build/entitlements.mas.plist",
+          entitlementsInherit: "build/entitlements.mas.inherit.plist"
+          // extendInfo: {
+          //   "ElectronTeamID": "",
+          //   "com.apple.security.app-sandbox": true
+          // }
+        },
         dmg: {
-          contents: [
-            {
-              x: 410,
-              y: 150,
-              type: "link",
-              path: "/Applications"
-            },
+          contents: [{
+            x: 410,
+            y: 150,
+            type: "link",
+            path: "/Applications"
+          },
             {
               x: 130,
               y: 150,
               type: "file"
-            }
-          ]
-        },
-        mac: {
-          category: "public.app-category.productivity",
-          // category: "public.app-category.social-networking",
-          icon: "build/icons/icon.icns",
-          target: ["dmg", "pkg", "zip", "mas"],
-          entitlements: "./build/entitlements.mac.plist",
-          entitlementsInherit: "./build/entitlements.mac.inherit.plist"
-          // bundleShortVersion:'50',
-          // extendInfo: {
-          //   "ElectronTeamID": "****"
-          // }
+            }]
         },
         win: {
-          icon: "build/icons/icon.ico",
+          icon: "build/icons/icon.jpg",
           target: {
             target: "nsis", // 打包为nsis安装文件,
-            arch: ["x64", "ia32"] // 支持32、64位的Windows系统
+            arch: [
+              "x64",
+              "ia32"
+            ] // 支持32、64位的Windows系统
           }
         },
         linux: {
-          icon: "build/icons/icon.ico"
-        },
-        mas: {
-          // type: "distribution",
-          category: "public.app-category.social-networking",
-          icon: "build/icons/icon.ico",
-          // provisioningProfile:"build/Mac_Distribution.provisionprofile",
-          entitlements: "./build/entitlements.mas.plist",
-          entitlementsInherit: "./build/entitlements.mas.inherit.plist"
-          // extendInfo: {
-          //   // "ElectronTeamID": "****",
-          //   // bundleShortVersion:'50',
-          //   "com.apple.security.app-sandbox":true
-          // }
+          "icon": "build/icons/icon.jpg"
         },
         nsis: {
-          oneClick: false,
-          createDesktopShortcut: true,
-          createStartMenuShortcut: true,
-          menuCategory: false,
-          allowElevation: true,
-          allowToChangeInstallationDirectory: true,
-          runAfterFinish: true
+          "oneClick": false,
+          "createDesktopShortcut": true,
+          "createStartMenuShortcut": true,
+          "menuCategory": false,
+          "allowElevation": true,
+          "allowToChangeInstallationDirectory": true,
+          "runAfterFinish": true
         }
       }
     }
@@ -107,7 +105,6 @@ module.exports = {
       }
     }
   },
-
   configureWebpack: {
     resolve: {
       alias: {
@@ -117,12 +114,18 @@ module.exports = {
     },
     externals: {
       "aws-sdk": "AWS"
-    }
+    },
+    plugins: [
+      new webpack.DefinePlugin({
+        "process.env.VUE_APP_VERSION": JSON.stringify(new Date().toLocaleString())
+      })
+    ]
   },
   assetsDir: undefined,
   runtimeCompiler: true,
   parallel: undefined,
   chainWebpack: config => {
+
     config.module
       .rule("images")
       .test(/\.(png|jpe?g|gif|webp)(\?.*)?$/)
@@ -136,6 +139,8 @@ module.exports = {
 
     const svgRule = config.module.rule("svg");
     svgRule.uses.clear();
-    svgRule.use("vue-svg-loader").loader("vue-svg-loader");
+    svgRule
+      .use("vue-svg-loader")
+      .loader("vue-svg-loader");
   }
 };
