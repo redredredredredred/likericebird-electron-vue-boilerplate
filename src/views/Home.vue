@@ -22,13 +22,18 @@
             <div>
                 <p><span>版本更新：</span>{{UpdaterText}}</p>
             </div>
+            <div>
+                <p><span>下载文件：</span><a href="https://static.videezy.com/system/protected/files/000/033/826/pattaya_aerial_view30.mov?md5=Ber08J6k6VTxxcEhGAEXsA&expires=1573733359">文件地址</a></p>
+                <p>文件名称：<span>{{filename}}</span></p>
+                <p>文件进度：<span>{{downloadProgress}}</span></p>
+            </div>
         </section>
     </div>
 </template>
 
 <script>
   import CustomNotification from "@/electron/notification";
-  import { CustomNotify } from "@/electron/notification";
+  import { CustomNotify, DownloadNotify } from "@/electron/notification";
 
   export default {
     name: "home",
@@ -36,7 +41,9 @@
       return {
         BadgeCount: 0,
         BadgeText: "",
-        UpdaterText: ""
+        UpdaterText: "",
+        downloadProgress: 0,
+        filename: ""
       };
     },
     components: {},
@@ -56,9 +63,14 @@
       this.UpdaterNotify = new CustomNotify((text) => {
         this.UpdaterText = text;
       });
+      this.DownloadNotify = new DownloadNotify((event, prc) => {
+        this.filename = prc.filename;
+        this.downloadProgress = prc.receive / prc.total;
+      });
     },
     destroyed() {
       this.UpdaterNotify.destory();
+      this.DownloadNotify.destory();
     }
   };
 </script>

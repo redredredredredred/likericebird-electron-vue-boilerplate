@@ -61,3 +61,24 @@ export class CustomNotify {
     ipcRenderer.removeListener("message", this.renderderCallback);
   }
 }
+
+export class DownloadNotify {
+  constructor(process) {
+    this.process = process
+
+    ipcRenderer.on("down-process", this.process);
+    // ipcRenderer.on("down-cancel", (event, data) => {
+    //   console.log("cancle");
+    // });
+    // ipcRenderer.on("down-done", (event, data) => {
+    //   console.log("done");
+    // });
+    // ipcRenderer.on("down-fail", (event, data) => {
+    //   console.log("fail");
+    // });
+  }
+
+  destory() {
+    ipcRenderer.removeListener("down-process", this.process);
+  }
+}

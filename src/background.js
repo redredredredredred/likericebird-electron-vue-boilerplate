@@ -11,17 +11,19 @@ import {
   Menu,
   netLog
 } from "electron";
+
 import {
   createProtocol,
   installVueDevtools
 } from "vue-cli-plugin-electron-builder/lib";
+
 import Badge from "electron-windows-badge";
 import log from "electron-log";
 import { autoUpdater } from "electron-updater";
 
 const isDevelopment = process.env.NODE_ENV !== "production";
 
-
+// 自动更新
 autoUpdater.logger = log;
 autoUpdater.logger.transports.file.level = "info";
 
@@ -130,8 +132,6 @@ function createWindow() {
   }
   // win.webContents.openDevTools()
 
-  win.setProgressBar(0.5);
-
   win.on("close", e => {
     log.info("win close");
     e.preventDefault();
@@ -150,9 +150,7 @@ function createWindow() {
   });
 
   // 处理外链打开逻辑
-  win.webContents.on(
-    "new-window",
-    (e, url, frameName, disposition, options) => {
+  win.webContents.on("new-window", (e, url, frameName, disposition, options) => {
       log.info("win new-window");
       e.preventDefault();
       shell.openExternal(url);
@@ -171,6 +169,51 @@ function createWindow() {
   //     e.preventDefault();
   //     return false;
   // });
+
+  // 监控文件下载进度
+  win.webContents.session.on("will-download", (event, item, webContents) => {
+    // 阻止文件下载
+    // event.preventDefault()
+    // require('request')(item.getURL(), (data) => {
+    //   require('fs').writeFileSync('/somewhere', data)
+    // })
+
+    // 控制文件下载
+    // item.setSavePath('/tmp/save.pdf') // 如果预设路径，将不弹出对话框
+    // win.webContents.downloadURL('');
+    item.on("updated", (event, state) => {
+      if (state === "interrupted") {
+        win.webContents.send("down-fail");
+        console.log("Download is interrupted but can be resumed");
+      } else if (state === "progressing") {
+        if (item.isPaused()) {
+          console.log("Download is paused");
+          win.webContents.send("down-process");
+
+        } else {
+          console.log(`Received bytes: ${item.getReceivedBytes()}`);
+          if (win.isDestroyed()) {
+            return;
+          }
+          win.webContents.send("down-process", {
+            filename: item.getFilename(),
+            receive: item.getReceivedBytes(),
+            total: item.getTotalBytes()
+          });
+          win.setProgressBar(Math.floor(item.getReceivedBytes() / item.getTotalBytes()));
+        }
+      }
+    });
+    item.once("done", (event, state) => {
+      win.setProgressBar(-1);
+      if (state === "completed") {
+        console.log("Download successfully");
+      } else {
+        console.log(`Download failed: ${state}`);
+      }
+    });
+  });
+
 
   // window10 通知fix
   app.setAppUserModelId("com.electron.fans");
@@ -260,7 +303,7 @@ function showMessageBoxSync(browserWindow, message) {
   });
 }
 
-// 自动更新操作
+// 自动更新操作 todo:bugfix  自动更新之后，触发安装闪退
 
 autoUpdater.on("checking-for-update", () => {
   sendStatusToWindow("Checking for update...");
@@ -287,6 +330,7 @@ autoUpdater.on("update-downloaded", (info) => {
     autoUpdater.quitAndInstall();
   }, 5000);
 });
+
 
 // Exit cleanly on request from parent process in development mode.
 if (isDevelopment) {
