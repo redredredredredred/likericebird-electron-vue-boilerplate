@@ -47,3 +47,17 @@ class CustomNotification {
 }
 
 export default new CustomNotification(remote);
+
+
+export class CustomNotify {
+  constructor(renderderCallback) {
+    this.renderderCallback = function(event, text) {
+      renderderCallback(text);
+    };
+    ipcRenderer.on("message", this.renderderCallback);
+  }
+
+  destory() {
+    ipcRenderer.removeListener("message", this.renderderCallback);
+  }
+}

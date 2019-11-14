@@ -26,11 +26,18 @@ module.exports = {
       nodeModulesPath: ["../../node_modules", "./node_modules"],
       // buildVersion:'2.3.2',
       builderOptions: {
+        publish: [{
+          provider: "generic",
+          url: "http://jackksssss.com/",
+          channel: "latest",
+          useMultipleRangeRequest: true,
+          publishAutoUpdate: true
+        }],
         appId: "com.electron.fans",
         productName: "fans",
         copyright: "copyright @ 2019 fans",
         // artifactName: "fans${version}.${ext}", // 安装包名
-        artifactName: "fans.${ext}", // 安装包名
+        artifactName: "fansInstaller.${ext}", // 安装包名
         // compression: "maximum",
         asar: true,
         // directories: {

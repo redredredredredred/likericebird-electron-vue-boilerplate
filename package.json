@@ -1,6 +1,6 @@
 {
   "name": "electron-zhibei",
-  "version": "0.1.0",
+  "version": "0.1.2",
   "private": true,
   "scripts": {
     "serve": "vue-cli-service serve",
@@ -17,6 +17,7 @@
   "dependencies": {
     "core-js": "^2.6.5",
     "electron-log": "^3.0.8",
+    "electron-updater": "^4.2.0",
     "electron-windows-badge": "^1.0.5",
     "update-electron-app": "^1.5.0",
     "vue": "^2.6.10",
