@@ -5,17 +5,14 @@ import {
 } from 'electron';
 
 class CustomNotification {
-  constructor(remote) {
+  // eslint-disable-next-line no-shadow
+  constructor(remote, ipcRenderer) {
     this.remote = remote;
+    this.ipcRenderer = ipcRenderer;
   }
 
   setBadgeCount(number) {
     ipcRenderer.sendSync('update-badge', number);
-
-    if (process.platform === 'darwin') {
-      // macOS 设置徽章计数器
-      this.remote.app.setBadgeCount(number);
-    }
   }
 
   /**
@@ -36,49 +33,45 @@ class CustomNotification {
    * sendSync&send
    */
   beep() {
-    ipcRenderer.sendSync('beep'); //  需要设置 event.returnValue = ''
+    this.ipcRenderer.sendSync('beep'); //  需要设置 event.returnValue = ''
     // ipcRenderer.send('beep')
   }
 
   beepOnce() {
-    ipcRenderer.sendSync('beep-once'); //  需要设置 event.returnValue = ''
+    this.ipcRenderer.sendSync('beep-once'); //  需要设置 event.returnValue = ''
     // ipcRenderer.send('beep-once')
   }
 }
 
-export default new CustomNotification(remote);
+export const customNotification = new CustomNotification(remote, ipcRenderer);
+
+export function CustomNotify(renderderCallback) {
+  this.renderderHandle = function renderderHandle(event, text) {
+    renderderCallback(text);
+  };
+  ipcRenderer.on('message', this.renderderHandle);
 
 
-export class CustomNotify {
-  constructor(renderderCallback) {
-    this.renderderCallback = function (event, text) {
-      renderderCallback(text);
-    };
-    ipcRenderer.on('message', this.renderderCallback);
-  }
-
-  destory() {
-    ipcRenderer.removeListener('message', this.renderderCallback);
-  }
+  this.destory = function destory() {
+    ipcRenderer.removeListener('message', this.renderderHandle);
+  };
 }
 
-export class DownloadNotify {
-  constructor(process) {
-    this.process = process;
+export function DownloadNotify(process) {
+  this.process = process;
 
-    ipcRenderer.on('down-process', this.process);
-    // ipcRenderer.on("down-cancel", (event, data) => {
-    //   console.log("cancle");
-    // });
-    // ipcRenderer.on("down-done", (event, data) => {
-    //   console.log("done");
-    // });
-    // ipcRenderer.on("down-fail", (event, data) => {
-    //   console.log("fail");
-    // });
-  }
+  ipcRenderer.on('down-process', this.process);
+  // ipcRenderer.on("down-cancel", (event, data) => {
+  //   console.log("cancle");
+  // });
+  // ipcRenderer.on("down-done", (event, data) => {
+  //   console.log("done");
+  // });
+  // ipcRenderer.on("down-fail", (event, data) => {
+  //   console.log("fail");
+  // });
 
-  destory() {
+  this.destory = function destory() {
     ipcRenderer.removeListener('down-process', this.process);
-  }
+  };
 }

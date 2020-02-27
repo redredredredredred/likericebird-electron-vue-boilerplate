@@ -32,31 +32,30 @@
 </template>
 
 <script>
-import { CustomNotify, DownloadNotify } from CustomNotification from "@/electron/notification";
-  
+import { CustomNotify, DownloadNotify, customNotification } from '@/electron/notification';
 
 export default {
   name: 'home',
-  data: function () {
+  data() {
     return {
       BadgeCount: 0,
       BadgeText: '',
       UpdaterText: '',
       downloadProgress: 0,
-      filename: ''
+      filename: '',
     };
   },
   components: {},
   methods: {
-    setBadgeCount: function () {
-      CustomNotification.setBadgeCount(this.BadgeCount);
+    setBadgeCount() {
+      customNotification.setBadgeCount(this.BadgeCount);
     },
-    setBadgeText: function () {
-      CustomNotification.setBadgeText(`'${this.BadgeText}'`);
+    setBadgeText() {
+      customNotification.setBadgeText(`'${this.BadgeText}'`);
     },
-    beep: function () {
-      CustomNotification.beep();
-      // CustomNotification.beepOnce()
+    beep() {
+      customNotification.beep();
+      // customNotification.beepOnce()
     },
   },
   mounted() {

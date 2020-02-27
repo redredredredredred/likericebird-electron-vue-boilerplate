@@ -38,6 +38,7 @@ module.exports = {
         productName: 'fans',
         copyright: 'copyright @ 2019 fans',
         // artifactName: "fans${version}.${ext}", // 安装包名
+        // eslint-disable-next-line no-template-curly-in-string
         artifactName: 'fansInstaller.${ext}', // 安装包名
         // compression: "maximum",
         asar: true,
@@ -51,23 +52,24 @@ module.exports = {
           type: 'distribution',
           category: 'public.app-category.productivity',
           icon: 'build/icons/icon.jpg',
-          target: ['dmg', 'pkg', 'zip', 'mas'],
+          // target: ['dmg', 'pkg', 'zip', 'mas'],
+          target: ['dmg', 'pkg', 'zip'],
           // identity: "", // app开发者 groupid
           // bundleVersion: '',
           // extendInfo: {
           //   "ElectronTeamID": ""
           // }
         },
-        mas: {
-          icon: 'build/icons/icon.jpg',
-          // provisioningProfile: "build/App_Store_XC_Wildcard.provisionprofile",
-          entitlements: 'build/entitlements.mas.plist',
-          entitlementsInherit: 'build/entitlements.mas.inherit.plist',
-          // extendInfo: {
-          //   "ElectronTeamID": "",
-          //   "com.apple.security.app-sandbox": true
-          // }
-        },
+        // mas: {
+        //   icon: 'build/icons/icon.jpg',
+        //   // provisioningProfile: "build/App_Store_XC_Wildcard.provisionprofile",
+        //   // entitlements: 'build/entitlements.mas.plist',
+        //   // entitlementsInherit: 'build/entitlements.mas.inherit.plist',
+        //   // extendInfo: {
+        //   //   "ElectronTeamID": "",
+        //   //   "com.apple.security.app-sandbox": true
+        //   // }
+        // },
         dmg: {
           contents: [{
             x: 410,

@@ -5,6 +5,7 @@ import store from './store';
 
 Vue.config.productionTip = false;
 
+console.log('TCL: router', router);
 new Vue({
   router,
   store,

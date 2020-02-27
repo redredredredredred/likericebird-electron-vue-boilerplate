@@ -1,3 +1,4 @@
+/* eslint-disable func-names */
 import testWithSpectron from 'vue-cli-plugin-electron-builder/lib/testWithSpectron';
 import chai from 'chai';
 import chaiAsPromised from 'chai-as-promised';
@@ -19,6 +20,7 @@ describe('Application launch', function () {
     chaiAsPromised.transferPromiseness = this.app.transferPromiseness;
   });
 
+  // eslint-disable-next-line consistent-return
   afterEach(function () {
     if (this.app && this.app.isRunning()) {
       return this.stopServe();

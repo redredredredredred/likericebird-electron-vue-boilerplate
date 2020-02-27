@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 
 import path from 'path';
 import {
@@ -27,18 +28,18 @@ const isDevelopment = process.env.NODE_ENV !== 'production';
 autoUpdater.logger = log;
 autoUpdater.logger.transports.file.level = 'info';
 
+log.info('App starting...');
+// Keep a global reference of the window object, if you don't, the window will
+// be closed automatically when the JavaScript object is garbage collected.
+let win = null;
+let tray;
+let badgeNum = 0;
+
 function sendStatusToWindow(text) {
   log.info(text);
   win.webContents.send('message', text);
   // win.setProgressBar(0.5)
 }
-
-log.info('App starting...');
-// Keep a global reference of the window object, if you don't, the window will
-// be closed automatically when the JavaScript object is garbage collected.
-let win;
-let tray;
-let badgeNum = 0;
 
 // 主进程状态和配置管理
 let customConfig;
@@ -65,6 +66,7 @@ function createWindow() {
   win = new BrowserWindow({
     width: 800,
     height: 600,
+    // eslint-disable-next-line no-undef
     icon: path.join(__static, customConfig.logoPath),
     webPreferences: {
       nodeIntegration: true,
@@ -74,6 +76,7 @@ function createWindow() {
   // 在这里执行顺序很重要，如果在页面 loadURL 之后声明执行，将导致依赖的一些对象初始化时机过迟，报错
 
   // 系统托盘，自定义操作
+  // eslint-disable-next-line no-undef
   tray = new Tray(path.join(__static, customConfig.logoPath));
   const contextMenu = Menu.buildFromTemplate([
     {
@@ -118,6 +121,7 @@ function createWindow() {
 
   // 初始化 下角标提示
   const badgeOptions = {};
+  // eslint-disable-next-line no-new
   new Badge(win, badgeOptions);
 
   // 页面加载start
@@ -180,6 +184,7 @@ function createWindow() {
     // 控制文件下载
     // item.setSavePath('/tmp/save.pdf') // 如果预设路径，将不弹出对话框
     // win.webContents.downloadURL('');
+    // eslint-disable-next-line no-shadow
     item.on('updated', (event, state) => {
       if (state === 'interrupted') {
         win.webContents.send('down-fail');
@@ -202,6 +207,7 @@ function createWindow() {
         }
       }
     });
+    // eslint-disable-next-line no-shadow
     item.once('done', (event, state) => {
       win.setProgressBar(-1);
       if (state === 'completed') {
@@ -244,6 +250,7 @@ app.on('ready', async () => {
     // See https://github.com/nklayman/vue-cli-plugin-electron-builder/issues/378 for more info
     // Electron will not launch with Devtools extensions installed on Windows 10 with dark mode
     // If you are not using Windows 10 dark mode, you may uncomment these lines
+    // eslint-disable-next-line max-len
     // In addition, if the linked issue is closed, you can upgrade electron and uncomment these lines
     try {
       await installVueDevtools();
@@ -267,29 +274,35 @@ app.on('ready', async () => {
 // IPC 进程间通信
 ipcMain.on('beep', (event, text) => {
   shell.beep();
+  // eslint-disable-next-line no-param-reassign
   event.returnValue = ''; // sendSync
 });
 
 ipcMain.once('beep-once', (event, text) => {
   shell.beep();
+  // eslint-disable-next-line no-param-reassign
   event.returnValue = ''; // sendSync
 });
 
 ipcMain.on('update-badge', (event, num) => {
-  badgeNum = num;
+  // badgeNum = num;
+
   if (num) {
+    console.log('TCL: num', num);
     tray.setImage(path.join(__static, 'finger.jpg'));
+    if (process.platform === 'darwin') {
+    // macOS 设置徽章计数器
+      debugger;
+      app.badgeCount = +num;
+    }
   } else {
+    // eslint-disable-next-line no-undef
     tray.setImage(path.join(__static, 'finger.jpg'));
   }
+
+  // eslint-disable-next-line no-param-reassign
   event.returnValue = 'info';
 });
-
-ipcMain.on('online-status-changed', (event, status) => {
-  console.log(status);
-  showMessageBoxSync(win, status);
-});
-
 
 // 对话框组件
 function showMessageBoxSync(browserWindow, message) {
@@ -301,6 +314,10 @@ function showMessageBoxSync(browserWindow, message) {
   });
 }
 
+ipcMain.on('online-status-changed', (event, status) => {
+  console.log(status);
+  showMessageBoxSync(win, status);
+});
 // 自动更新操作 todo:bugfix  自动更新之后，触发安装闪退
 
 autoUpdater.on('checking-for-update', () => {
@@ -316,10 +333,10 @@ autoUpdater.on('error', (err) => {
   sendStatusToWindow(`Error in auto-updater. ${err}`);
 });
 autoUpdater.on('download-progress', (progressObj) => {
-  let log_message = `Download speed: ${progressObj.bytesPerSecond}`;
-  log_message = `${log_message} - Downloaded ${progressObj.percent}%`;
-  log_message = `${log_message} (${progressObj.transferred}/${progressObj.total})`;
-  sendStatusToWindow(log_message);
+  let logMessage = `Download speed: ${progressObj.bytesPerSecond}`;
+  logMessage = `${logMessage} - Downloaded ${progressObj.percent}%`;
+  logMessage = `${logMessage} (${progressObj.transferred}/${progressObj.total})`;
+  sendStatusToWindow(logMessage);
   win.setProgressBar(progressObj.percent);
 });
 autoUpdater.on('update-downloaded', (info) => {
@@ -348,5 +365,5 @@ if (isDevelopment) {
 // 捕获全局错误，进行进程管理
 process.on('uncaughtException', (error) => {
   log.error(error.stack || JSON.stringify(error));
-  app.exit();
+  // app.exit();
 });
