@@ -1,28 +1,41 @@
-const { testWithSpectron } = require("vue-cli-plugin-electron-builder");
-jest.setTimeout(50000);
+import testWithSpectron from 'vue-cli-plugin-electron-builder/lib/testWithSpectron';
+import chai from 'chai';
+import chaiAsPromised from 'chai-as-promised';
 
-test("Window Loads Properly", async () => {
-  // Wait for dev server to start
-  const { app, stopServe } = await testWithSpectron();
-  const win = app.browserWindow;
-  const client = app.client;
+chai.should();
+chai.use(chaiAsPromised);
 
-  // Window was created
-  expect(await client.getWindowCount()).toBe(1);
-  // It is not minimized
-  expect(await win.isMinimized()).toBe(false);
-  // Window is visible
-  expect(await win.isVisible()).toBe(true);
-  // Size is correct
-  const { width, height } = await win.getBounds();
-  expect(width).toBeGreaterThan(0);
-  expect(height).toBeGreaterThan(0);
-  // App is loaded properly
-  expect(
-    /Welcome to Your Vue\.js (\+ TypeScript )?App/.test(
-      await client.getHTML("#app")
-    )
-  ).toBe(true);
+describe('Application launch', function () {
+  this.timeout(30000);
 
-  await stopServe();
+  beforeEach(function () {
+    return testWithSpectron().then((instance) => {
+      this.app = instance.app;
+      this.stopServe = instance.stopServe;
+    });
+  });
+
+  beforeEach(function () {
+    chaiAsPromised.transferPromiseness = this.app.transferPromiseness;
+  });
+
+  afterEach(function () {
+    if (this.app && this.app.isRunning()) {
+      return this.stopServe();
+    }
+  });
+
+  it('opens a window', function () {
+    return this.app.client
+      .getWindowCount()
+      .should.eventually.have.at.least(1)
+      .browserWindow.isMinimized()
+      .should.eventually.be.false.browserWindow.isVisible()
+      .should.eventually.be.true.browserWindow.getBounds()
+      .should.eventually.have.property('width')
+      .and.be.above(0)
+      .browserWindow.getBounds()
+      .should.eventually.have.property('height')
+      .and.be.above(0);
+  });
 });

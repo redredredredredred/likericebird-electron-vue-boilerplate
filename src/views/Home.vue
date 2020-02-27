@@ -32,47 +32,47 @@
 </template>
 
 <script>
-  import CustomNotification from "@/electron/notification";
-  import { CustomNotify, DownloadNotify } from "@/electron/notification";
+import { CustomNotify, DownloadNotify } from CustomNotification from "@/electron/notification";
+  
 
-  export default {
-    name: "home",
-    data: function() {
-      return {
-        BadgeCount: 0,
-        BadgeText: "",
-        UpdaterText: "",
-        downloadProgress: 0,
-        filename: ""
-      };
+export default {
+  name: 'home',
+  data: function () {
+    return {
+      BadgeCount: 0,
+      BadgeText: '',
+      UpdaterText: '',
+      downloadProgress: 0,
+      filename: ''
+    };
+  },
+  components: {},
+  methods: {
+    setBadgeCount: function () {
+      CustomNotification.setBadgeCount(this.BadgeCount);
     },
-    components: {},
-    methods: {
-      setBadgeCount: function() {
-        CustomNotification.setBadgeCount(this.BadgeCount);
-      },
-      setBadgeText: function() {
-        CustomNotification.setBadgeText(`'${this.BadgeText}'`);
-      },
-      beep: function() {
-        CustomNotification.beep();
-        // CustomNotification.beepOnce()
-      }
+    setBadgeText: function () {
+      CustomNotification.setBadgeText(`'${this.BadgeText}'`);
     },
-    mounted() {
-      this.UpdaterNotify = new CustomNotify((text) => {
-        this.UpdaterText = text;
-      });
-      this.DownloadNotify = new DownloadNotify((event, prc) => {
-        this.filename = prc.filename;
-        this.downloadProgress = prc.receive / prc.total;
-      });
+    beep: function () {
+      CustomNotification.beep();
+      // CustomNotification.beepOnce()
     },
-    destroyed() {
-      this.UpdaterNotify.destory();
-      this.DownloadNotify.destory();
-    }
-  };
+  },
+  mounted() {
+    this.UpdaterNotify = new CustomNotify((text) => {
+      this.UpdaterText = text;
+    });
+    this.DownloadNotify = new DownloadNotify((event, prc) => {
+      this.filename = prc.filename;
+      this.downloadProgress = prc.receive / prc.total;
+    });
+  },
+  destroyed() {
+    this.UpdaterNotify.destory();
+    this.DownloadNotify.destory();
+  },
+};
 </script>
 
 <style lang="stylus" rel="stylesheet/stylus" scoped>
