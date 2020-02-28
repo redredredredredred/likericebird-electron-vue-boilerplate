@@ -12,7 +12,7 @@ module.exports = {
   indexPath: 'index.html',
   devServer: {
     index: 'index.html',
-    open: process.platform === 'darwin',
+    // open: process.platform === 'darwin',
     port: 10844,
     https: false,
     hotOnly: false,

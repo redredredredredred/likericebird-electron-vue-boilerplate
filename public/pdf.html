@@ -1,0 +1,35 @@
+<!--  -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <script>
+        const PDFWindow = require('electron-pdf-window');
+        
+        const { BrowserWindow } = require('electron').remote;
+        // 在电子浏览器窗口预览PDF文件
+        const pdfwin = new BrowserWindow({
+          width: 800,
+          height: 600,
+          webPreferences: {
+            nodeIntegration: true,
+            webSecurity: false,
+          },
+        });
+        
+        PDFWindow.addSupport(pdfwin);
+        
+        // pdfwin.loadURL('app://./穷游锦囊中国铁道旅行.pdf');
+        // pdfwin.loadURL('http://localhost:10844/穷游锦囊中国铁道旅行.pdf');
+        // pdfwin.loadURL(process.env.WEBPACK_DEV_SERVER_URL);
+        pdfwin.loadURL('file:///boilerplate/likericebird-electron-vue-boilerplate/public/穷游锦囊中国铁道旅行.pdf');
+        // pdfwin.loadURL('http://mozilla.github.io/pdf.js/web/compressed.tracemonkey-pldi-09.pdf');
+        
+        pdfwin.show();
+        </script>
+</body>
+</html>

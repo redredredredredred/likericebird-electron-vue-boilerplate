@@ -1,6 +1,14 @@
 /* eslint-disable no-unused-vars */
+/**
+ *  main process
+ *  1、主进程中包含了对于 App 的生命周期、系统原生元素（菜单、菜单栏、dock栏、托盘）的控制逻辑
+ *  2、主进程还负责创建应用的所有渲染进程（render process）
+ *  3、主进程中集成了所有的node api、
+ *
+ */
 
 import path from 'path';
+import os from 'os';
 import {
   app,
   protocol,
@@ -11,6 +19,7 @@ import {
   Tray,
   Menu,
   netLog,
+
 } from 'electron';
 
 import {
@@ -20,7 +29,12 @@ import {
 
 import Badge from 'electron-windows-badge';
 import log from 'electron-log';
+import electronDebug from 'electron-debug';
 import { autoUpdater } from 'electron-updater';
+import { openProcessManager } from 'electron-process-manager'; // 显示electron进程的资源使用情况
+import { download } from 'electron-dl'; // 只能使用在主进程中的下载状态插件
+import PDFWindow from 'electron-pdf-window'; // 在电子浏览器窗口预览PDF文件
+import Elstorage from 'electron-json-storage'; // 自定义存储功能
 
 const isDevelopment = process.env.NODE_ENV !== 'production';
 
@@ -29,9 +43,13 @@ autoUpdater.logger = log;
 autoUpdater.logger.transports.file.level = 'info';
 
 log.info('App starting...');
+
+electronDebug();
+
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
 let win = null;
+// let pdfwin = null;
 let tray;
 let badgeNum = 0;
 
@@ -62,6 +80,25 @@ protocol.registerSchemesAsPrivileged([
 ]);
 
 function createWindow() {
+  // // 在电子浏览器窗口预览PDF文件
+  // pdfwin = new BrowserWindow({
+  //   width: 800,
+  //   height: 600,
+  //   webPreferences: {
+  //     nodeIntegration: true,
+  //     webSecurity: false,
+  //   },
+  // });
+
+  // PDFWindow.addSupport(pdfwin);
+
+  // // pdfwin.loadURL('app://./穷游锦囊中国铁道旅行.pdf');
+  // // pdfwin.loadURL('http://localhost:10844/穷游锦囊中国铁道旅行.pdf');
+  // // pdfwin.loadURL(process.env.WEBPACK_DEV_SERVER_URL);
+  // pdfwin.loadURL('file:///boilerplate/likericebird-electron-vue-boilerplate/public/穷游锦囊中国铁道旅行.pdf');
+
+  // pdfwin.show();
+
   // Create the browser window.
   win = new BrowserWindow({
     width: 800,
@@ -70,6 +107,7 @@ function createWindow() {
     icon: path.join(__static, customConfig.logoPath),
     webPreferences: {
       nodeIntegration: true,
+      webSecurity: false,
     },
   });
 
@@ -134,6 +172,7 @@ function createWindow() {
     // Load the index.html when not in development
     win.loadURL('app://./index.html');
   }
+  // win.loadURL('app://./pdf.html');
   // win.webContents.openDevTools()
 
   win.on('close', (e) => {
@@ -153,7 +192,7 @@ function createWindow() {
     e.returnValue = false;
   });
 
-  // 处理外链打开逻辑
+  // 处理外链打开逻辑,在浏览器中打开链接
   win.webContents.on('new-window', (e, url, frameName, disposition, options) => {
     log.info('win new-window');
     e.preventDefault();
@@ -269,6 +308,7 @@ app.on('ready', async () => {
   // console.log('Net-logs written to', path)
 
   autoUpdater.checkForUpdates();
+  // openProcessManager();
 });
 
 // IPC 进程间通信
@@ -289,6 +329,7 @@ ipcMain.on('update-badge', (event, num) => {
 
   if (num) {
     console.log('TCL: num', num);
+    // eslint-disable-next-line no-undef
     tray.setImage(path.join(__static, 'finger.jpg'));
     if (process.platform === 'darwin') {
     // macOS 设置徽章计数器
@@ -317,7 +358,25 @@ function showMessageBoxSync(browserWindow, message) {
 ipcMain.on('online-status-changed', (event, status) => {
   console.log(status);
   showMessageBoxSync(win, status);
+  event.returnValue = 'online-status-changed';
 });
+
+// 显示下载进度
+ipcMain.on('download-button', (event, { url }) => {
+  console.log('TCL: url', url);
+  const focuswin = BrowserWindow.getFocusedWindow();
+  download(focuswin, url, {
+    saveAs: false,
+    openFolderWhenDone: true,
+    showBadge: true,
+  });
+  // .then((DownloadItem) => {
+  //   // DownloadItem;
+  // }).catch();
+  event.returnValue = 'download dl';
+});
+
+
 // 自动更新操作 todo:bugfix  自动更新之后，触发安装闪退
 
 autoUpdater.on('checking-for-update', () => {
