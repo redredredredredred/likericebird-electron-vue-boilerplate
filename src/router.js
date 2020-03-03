@@ -22,5 +22,29 @@ export default new Router({
       // which is lazy-loaded when the route is visited.
       component: () => import(/* webpackChunkName: "file-transfer" */ '@/views/FileTransfer.vue'),
     },
+    {
+      path: '/badge',
+      name: 'badge',
+      // route level code-splitting
+      // this generates a separate chunk (about.[hash].js) for this route
+      // which is lazy-loaded when the route is visited.
+      component: () => import(/* webpackChunkName: "badge" */ '@/views/Badge.vue'),
+    },
+    {
+      path: '/auto-upgrade',
+      name: 'auto-upgrade',
+      // route level code-splitting
+      // this generates a separate chunk (about.[hash].js) for this route
+      // which is lazy-loaded when the route is visited.
+      component: () => import(/* webpackChunkName: "auto-upgrade" */ '@/views/AutoUpgrade.vue'),
+    },
+    {
+      path: '/account-preferences.vue',
+      name: 'account-preferences',
+      // route level code-splitting
+      // this generates a separate chunk (about.[hash].js) for this route
+      // which is lazy-loaded when the route is visited.
+      component: () => import(/* webpackChunkName: "account-preferences" */ '@/views/AccountPreferences.vue'),
+    },
   ],
 });

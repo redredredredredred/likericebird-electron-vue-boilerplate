@@ -12,7 +12,7 @@ class CustomNotification {
   }
 
   setBadgeCount(number) {
-    ipcRenderer.sendSync('update-badge', number);
+    this.ipcRenderer.sendSync('update-badge', number);
   }
 
   /**

@@ -8,7 +8,7 @@
  */
 
 import path from 'path';
-import os from 'os';
+// import os from 'os';
 import {
   app,
   protocol,
@@ -19,7 +19,7 @@ import {
   Tray,
   Menu,
   netLog,
-
+  Notification,
 } from 'electron';
 
 import {
@@ -28,6 +28,7 @@ import {
 } from 'vue-cli-plugin-electron-builder/lib';
 
 import Badge from 'electron-windows-badge';
+// import { getSessionState } from '@meetfranz/electron-notification-state';
 import log from 'electron-log';
 import electronDebug from 'electron-debug';
 import { autoUpdater } from 'electron-updater';
@@ -258,10 +259,18 @@ function createWindow() {
   });
 
 
-  // window10 通知fix
+  /**
+   * Windows 7和更高版本系统中的任务栏广泛使用应用程序用户模型ID（AppUserModelIDs），以将进程，文件和窗口与特定应用程序相关联。
+   * 拥有多个进程的应用程序或在宿主进程中运行的应用程序可能需要显式地标识自己，以便可以将其原本不同的窗口组合在单个任务栏按钮下，并控制该应用程序的跳转列表的内容。
+   */
+  // window10 通知fix，与任务栏、多进程、和多窗口问题相关。
+  // %兼容性说明%：Windows 8中，通知正文的最大长度为250个字符，Windows团队建议将通知保留为200个字符。 然而，Windows 10中已经删除了这个限制
   app.setAppUserModelId('com.electron.fans');
 }
 
+/**
+ * 应用程序的生命周期逻辑
+ */
 // Quit when all windows are closed.
 app.on('window-all-closed', () => {
   // On macOS it is common for applications and their menu bar
@@ -307,11 +316,60 @@ app.on('ready', async () => {
   // const path = await netLog.stopLogging()
   // console.log('Net-logs written to', path)
 
+  // 应用更新逻辑：检查更新
   autoUpdater.checkForUpdates();
   // openProcessManager();
 });
 
-// IPC 进程间通信
+/**
+ * IPC 主进程与渲染进程进行进程间通信
+ * */
+
+// 1、实现操作系统本地通知，调用 Notification APIs
+// electron-windows-notifications 允许高级通知，自定义模板，图像和其他灵活元素。
+ipcMain.on('custom_notification', (event, text) => {
+  // 判断是否支持桌面通知
+  if (Notification.isSupported()) {
+    Notification.isSupported();
+    console.log('Notification.i;spported()', Notification.isSupported());
+  }
+  // 免打扰模式 / 演示模式 状态判断
+  // console.log(getSessionState());
+
+  const customNotification = new Notification({
+    title: 'test title', // 标题
+    subtitle: 'test2 title', // 副标题 macOS
+    body: 'peace', // 消息体
+    silent: true, // 有无系统提示音
+    sound: '', // 声音文件 macOS
+    icon: '', // String | NativeImage
+    hasReply: false, // 是否有回复选项  macOS
+    replyPlaceholder: '', // 答复输入框中的占位符  macOS
+    timeoutType: '', // 'default' or 'never' Windows
+    closeButtonText: '', // 自定义的警告框关闭按钮文字 macOS
+    actions: '', // 要添加到通知中的操作 macOS
+  });
+
+  customNotification.show();
+  customNotification.click = function (event) {
+    console.log('customNotification.click -> customNotification.click', event);
+  };
+  customNotification.close = function (event) {
+    console.log('customNotification.close -> customNotification.close', event);
+  };
+  customNotification.reply = function (event) {
+    console.log('customNotification.reply -> customNotification.reply ', event);
+  };
+  customNotification.action = function (event) {
+    console.log('customNotification.action -> customNotification.action', event);
+  };
+
+  // eslint-disable-next-line no-param-reassign
+  event.returnValue = ''; // sendSync
+});
+
+
+// 蜂鸣声
 ipcMain.on('beep', (event, text) => {
   shell.beep();
   // eslint-disable-next-line no-param-reassign
