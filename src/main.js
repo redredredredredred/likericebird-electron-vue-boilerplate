@@ -9,6 +9,7 @@ import store from './store';
 
 Vue.config.productionTip = false;
 
+// vue-electron；这个插件好处在于链接了俩个框架的api接口，但是想要实现应用层代码分离解耦
 Vue.use(VueElectron);
 
 console.log('TCL: router', router);

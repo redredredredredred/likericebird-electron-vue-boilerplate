@@ -2,22 +2,26 @@
     <div class="home">
         <div msg="Welcome to Your Vue.js App"/>
         <section class="base-card shadow-gary">
-            <div>
+            <p>
                 <input type="text" v-model="BadgeCount"/>
+            </p>
+            <p>
                 <button class="button-primary" @click="setBadgeCount">
                     点击显示徽章计数
                 </button>
-            </div>
-            <div>
+            </p>
+            <p>
                 <input type="text" v-model="BadgeText"/>
+            </p>
+            <p>
                 <button class="button-primary" @click="setBadgeText">
                     点击改变徽章文本
                 </button>
-            </div>
+            </p>
 
-            <div>
+            <p>
                 <button class="button-primary" @click="beep">小声哔哔</button>
-            </div>
+            </p>
 
 
         </section>
@@ -42,7 +46,7 @@ export default {
       customNotification.setBadgeCount(this.BadgeCount);
     },
     setBadgeText() {
-      customNotification.setBadgeText(`'${this.BadgeText}'`);
+      customNotification.setBadgeText(`${this.BadgeText}`);
     },
     beep() {
       customNotification.beep();
@@ -116,9 +120,9 @@ export default {
         -moz-user-select none
         -webkit-user-select none
         -ms-user-select none
-        padding 12px 20px
-        font-size 14px
-        border-radius 4px
+        padding 8px 5px
+        font-size 12px
+        border-radius 8px
 
     .button-primary
         color #fff

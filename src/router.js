@@ -15,6 +15,14 @@ export default new Router({
       component: Home,
     },
     {
+      path: '/basic-function',
+      name: 'basic-function',
+      // route level code-splitting
+      // this generates a separate chunk (about.[hash].js) for this route
+      // which is lazy-loaded when the route is visited.
+      component: () => import(/* webpackChunkName: "basic-function" */ '@/views/BasicFunction.vue'),
+    },
+    {
       path: '/file-transfer',
       name: 'file-transfer',
       // route level code-splitting

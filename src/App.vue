@@ -2,6 +2,8 @@
   <div id="app">
     <div id="nav">
       <router-link class="routerLink" to="/" activeClass="active">Home</router-link>
+      <router-link class="routerLink" to="/basic-function" activeClass="active">
+        基础功能</router-link>
       <router-link class="routerLink" to="/file-transfer" activeClass="active">
         文件传输</router-link>
       <router-link class="routerLink" to="/badge" activeClass="active">徽标</router-link>

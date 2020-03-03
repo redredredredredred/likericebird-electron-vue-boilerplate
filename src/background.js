@@ -18,6 +18,7 @@ import {
   dialog,
   Tray,
   Menu,
+  globalShortcut,
   netLog,
   Notification,
 } from 'electron';
@@ -46,6 +47,11 @@ autoUpdater.logger.transports.file.level = 'info';
 log.info('App starting...');
 
 electronDebug();
+
+/**
+ * 离屏渲染逻辑：第一步禁用GPU加速
+ */
+app.disableHardwareAcceleration(); // 配合离屏渲染，禁用GPU加速；
 
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
@@ -109,6 +115,7 @@ function createWindow() {
     webPreferences: {
       nodeIntegration: true,
       webSecurity: false,
+      offscreen: true, // 第二步，添加离屏渲染功能；
     },
   });
 
@@ -176,6 +183,14 @@ function createWindow() {
   // win.loadURL('app://./pdf.html');
   // win.webContents.openDevTools()
 
+  /**
+   * 离屏渲染逻辑：第三步进行渲染帧速率设置
+   */
+  win.webContents.on('paint', (event, dirty, image) => {
+    // updateBitmap(dirty, image.getBitmap())
+  })
+  win.webContents.setFrameRate(30)
+
   win.on('close', (e) => {
     log.info('win close');
     e.preventDefault();
@@ -213,7 +228,9 @@ function createWindow() {
   //     return false;
   // });
 
-  // 监控文件下载进度
+  /**
+   * 监控文件下载进度
+   */
   win.webContents.session.on('will-download', (event, item, webContents) => {
     // 阻止文件下载
     // event.preventDefault()
@@ -243,7 +260,8 @@ function createWindow() {
             receive: item.getReceivedBytes(),
             total: item.getTotalBytes(),
           });
-          win.setProgressBar(Math.floor(item.getReceivedBytes() / item.getTotalBytes()));
+          // 此处与 electron-dl 下载进度冲突，故临时禁用
+          // win.setProgressBar(Math.floor(item.getReceivedBytes() / item.getTotalBytes()));
         }
       }
     });
@@ -266,6 +284,12 @@ function createWindow() {
   // window10 通知fix，与任务栏、多进程、和多窗口问题相关。
   // %兼容性说明%：Windows 8中，通知正文的最大长度为250个字符，Windows团队建议将通知保留为200个字符。 然而，Windows 10中已经删除了这个限制
   app.setAppUserModelId('com.electron.fans');
+
+  /**
+   * 启动应用时在windows 任务栏闪烁突出应用图标
+   */
+  win.once('focus', () => win.flashFrame(false));
+  win.flashFrame(true);
 }
 
 /**
@@ -308,26 +332,62 @@ app.on('ready', async () => {
   }
   createWindow();
 
+  /**
+   * 4、基础功能：自定义 Dock 菜单；配置需添加在
+   */
+  (function configDockMenu() {
+    const dockMenu = Menu.buildFromTemplate([
+      {
+        label: 'New Window',
+        click() { console.log('New Window'); },
+      }, {
+        label: 'New Window with Settings',
+        submenu: [
+          { label: 'Basic' },
+          { label: 'Pro' },
+        ],
+      },
+      { label: 'New Command...' },
+    ]);
+
+    app.dock.setMenu(dockMenu);
+  }());
+
+  /**
+   * 全局快捷键访问回调事件
+   */
+  globalShortcut.register('CommandOrControl+X', () => {
+    console.log('CommandOrControl+X is pressed');
+  })
   // 进行ready 之后的操作管理
   // netLog.startLogging(path.join(__static, customConfig.logoPath))
-  netLog.startLogging(customConfig.logoPath);
+  await netLog.startLogging(customConfig.logoPath);
 
   // // After some network events
   // const path = await netLog.stopLogging()
   // console.log('Net-logs written to', path)
 
-  // 应用更新逻辑：检查更新
-  autoUpdater.checkForUpdates();
+  /**
+   * 应用更新逻辑：检查更新
+    */
+  await autoUpdater.checkForUpdates();
   // openProcessManager();
+  win.setRepresentedFilename('/documents/哔哩哔哩APP主站软件质量规范文档.docx');
+  win.setDocumentEdited(true);
+
+  app.setAccessibilitySupportEnabled(true)
 });
 
 /**
- * IPC 主进程与渲染进程进行进程间通信
+ * *********  IPC 主进程与渲染进程进行进程间通信  *********
  * */
 
-// 1、实现操作系统本地通知，调用 Notification APIs
+/**
+ * 1、通知（Notifications）
+ 实现操作系统本地通知，调用 Notification APIs
+ */
 // electron-windows-notifications 允许高级通知，自定义模板，图像和其他灵活元素。
-ipcMain.on('custom_notification', (event, text) => {
+ipcMain.on('custom_notification', (event, notificationOptionsJson) => {
   // 判断是否支持桌面通知
   if (Notification.isSupported()) {
     Notification.isSupported();
@@ -335,19 +395,22 @@ ipcMain.on('custom_notification', (event, text) => {
   }
   // 免打扰模式 / 演示模式 状态判断
   // console.log(getSessionState());
-
+  const notificationOptions = JSON.parse(notificationOptionsJson);
+  console.log('notificationOptionsJson:', notificationOptionsJson);
+  console.log('notificationOptions:', notificationOptions);
   const customNotification = new Notification({
     title: 'test title', // 标题
     subtitle: 'test2 title', // 副标题 macOS
     body: 'peace', // 消息体
-    silent: true, // 有无系统提示音
-    sound: '', // 声音文件 macOS
-    icon: '', // String | NativeImage
-    hasReply: false, // 是否有回复选项  macOS
-    replyPlaceholder: '', // 答复输入框中的占位符  macOS
-    timeoutType: '', // 'default' or 'never' Windows
-    closeButtonText: '', // 自定义的警告框关闭按钮文字 macOS
-    actions: '', // 要添加到通知中的操作 macOS
+    silent: false, // 有无系统提示音
+    // sound: '', // 声音文件 macOS
+    // icon: 'finger.jpg', // String | NativeImage
+    // hasReply: false, // 是否有回复选项  macOS
+    // replyPlaceholder: '', // 答复输入框中的占位符  macOS
+    // timeoutType: '', // 'default' or 'never' Windows
+    // closeButtonText: '', // 自定义的警告框关闭按钮文字 macOS
+    // actions: '', // 要添加到通知中的操作 macOS
+    ...notificationOptions,
   });
 
   customNotification.show();
@@ -368,6 +431,193 @@ ipcMain.on('custom_notification', (event, text) => {
   event.returnValue = ''; // sendSync
 });
 
+/**
+ * 2、添加最近访问文件 app.addRecentDocument
+ */
+// app.addRecentDocument('/documents/1.docx') // 本地文件路径
+// app.clearRecentDocuments()
+
+/**
+ * 3、任务栏进度条
+ */
+ipcMain.on('progress-bar', (event, progressValue) => {
+  console.log('progress-bar ', progressValue);
+  win.setProgressBar(+progressValue);
+  event.returnValue = 'progress-bar';
+});
+
+/**
+ * 4、自定义 Dock 菜单
+ * 此处见ready事件处理逻辑
+ */
+
+/**
+ * 5、Windows 任务栏
+ */
+
+//
+// (function configMenu() {
+//   if (isDevelopment) {
+//     const template = [
+//       {
+//         label: 'Application',
+//         submenu: [
+//           {
+//             label: 'Show App',
+//             click() {
+//               // win.show();
+//             },
+//           },
+//           {
+//             label: 'Quit',
+//             accelerator: 'CmdOrCtrl+Q',
+//             click() {
+//               app.isQuiting = true;
+//               app.quit();
+//               app.exit(0);
+//             },
+//           },
+//           {
+//             label: 'Fresh App',
+//             accelerator: 'CmdOrCtrl+F5',
+//             click() {
+//               electronLogger.info('fresh action.');
+//               // win.reload()
+//               loadUrl(win, query);
+//             },
+//           },
+//           {
+//             label: 'Dev tools',
+//             accelerator: 'CmdOrCtrl+F12',
+//             click() {
+//               electronLogger.info('toggleDevTools F12');
+//               if (!win) return;
+//               win.webContents.toggleDevTools();
+//             },
+//           }, {
+//             label: 'Quit',
+//             accelerator: 'CmdOrCtrl+Q',
+//             click() {
+//               electronLogger.info('quit action.');
+//               app.quit();
+//               app.exit(0);
+//             },
+//           }],
+//       },
+//       {
+//         label: 'Help',
+//         submenu: [
+//           {
+//             label: 'Support',
+//             click: (item, focusedWindow) => {
+//               if (focusedWindow) {
+//                 // TODO: 上传logs文件
+//                 electronLogger.info('upload logs action.');
+//               }
+//             },
+//           },
+//         ],
+//       },
+//     ];
+//     Menu.setApplicationMenu(Menu.buildFromTemplate(template));
+//   } else if (process.platform === 'darwin') {
+//     const template = [
+//       {
+//         label: 'Application',
+//         submenu: [
+//           {
+//             label: 'Show App',
+//             click() {
+//               // win.show();
+//             },
+//           },
+//           {
+//             label: 'Quit',
+//             accelerator: 'CmdOrCtrl+Q',
+//             click() {
+//               app.isQuiting = true;
+//               app.quit();
+//               app.exit(0);
+//             },
+//           }],
+//       },
+//       {
+//         label: 'Edit',
+//         submenu: [
+//           { label: 'Undo', accelerator: 'CmdOrCtrl+Z', selector: 'undo:' },
+//           { label: 'Redo', accelerator: 'Shift+CmdOrCtrl+Z', selector: 'redo:' },
+//           { type: 'separator' },
+//           { label: 'Cut', accelerator: 'CmdOrCtrl+X', selector: 'cut:' },
+//           { label: 'Copy', accelerator: 'CmdOrCtrl+C', selector: 'copy:' },
+//           { label: 'Paste', accelerator: 'CmdOrCtrl+V', selector: 'paste:' },
+//           { label: 'Select All', accelerator: 'CmdOrCtrl+A', selector: 'selectAll:' },
+//         ],
+//       },
+//       {
+//         label: 'Help',
+//         submenu: [
+//           {
+//             label: 'Support',
+//             click: (item, focusedWindow) => {
+//               if (focusedWindow) {
+//                 // TODO: 上传logs文件
+//                 electronLogger.info('upload logs action.');
+//               }
+//             },
+//           },
+//         ],
+//       },
+//     ];
+//     Menu.setApplicationMenu(Menu.buildFromTemplate(template));
+//   } else {
+//     Menu.setApplicationMenu(null);
+//   }
+// }());
+
+/**
+ * 6、快捷键设置
+ */
+
+/**
+ * 7、在线/离线事件探测
+ * 在网页上使用HTML5 API navigator.onLine，进行判断，但是状态仅仅能做到脱机（从网络断开）判断
+ * todo：为了对网络进行更多的检测，需要使用node进行一些底层开发
+ */
+ipcMain.on('online-status-changed', (event, status) => {
+  console.log('online-status-changed', status);
+  event.returnValue = 'online-status-changed';
+})
+
+ipcMain.on('online-status-props-changed', (event, status) => {
+  console.log('online-status-props-changed', status);
+  event.returnValue = 'online-status-props-changed';
+})
+
+/**
+ * 8、原生拖拽事件
+ */
+ipcMain.on('drag-start', (event, filePath) => {
+  console.log('main- drag-start filePath = ', filePath)
+  event.sender.startDrag({
+    file: filePath,
+    icon: 'finger.jpg',
+  });
+  event.returnValue = 'drag-start';
+})
+
+/**
+ * 9、离屏渲染
+ * 禁用GPU加速，启用 软件输出设备 进行渲染
+ * 实践以后确实加速效果很明显
+ * todo： 副作用是怎么样的？
+ */
+
+/**
+ * 10、Mojave 系统级黑暗模式
+ * 自动更新原生界面；“原生界面”包括文件选择器、窗口边框、对话框、上下文菜单等等
+ */
+
+
 
 // 蜂鸣声
 ipcMain.on('beep', (event, text) => {
@@ -375,6 +625,7 @@ ipcMain.on('beep', (event, text) => {
   // eslint-disable-next-line no-param-reassign
   event.returnValue = ''; // sendSync
 });
+
 
 ipcMain.once('beep-once', (event, text) => {
   shell.beep();
@@ -482,5 +733,5 @@ if (isDevelopment) {
 // 捕获全局错误，进行进程管理
 process.on('uncaughtException', (error) => {
   log.error(error.stack || JSON.stringify(error));
-  // app.exit();
+  app.exit();
 });

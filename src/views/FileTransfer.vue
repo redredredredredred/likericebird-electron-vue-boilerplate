@@ -1,6 +1,6 @@
 <template>
   <div class="about">
-    <h1>文件上传下载演示</h1>
+    <h3>文件上传下载演示</h3>
     <div>
       <p>
         <span>显示多种下载方式</span>
@@ -62,7 +62,7 @@ export default {
       files: [],
       downloadProgress: 0,
       filename: '',
-      downloadUrl: '',
+      downloadUrl: 'http://img1.imgtn.bdimg.com/it/u=3881671414,3473914033&fm=26&gp=0.jpg',
     };
   },
   computed: {
