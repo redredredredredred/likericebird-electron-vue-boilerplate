@@ -36,7 +36,9 @@
         <div>
             <div><h4>4、原生拖拽事件</h4>
                 <div>
-                    <div class="DragField" draggable="true" @dragstart="dragstartSimpleHandle">我是一段拖拽热区</div>
+                    <div class="DragField"
+                         draggable="true"
+                         @dragstart="dragstartSimpleHandle">我是一段拖拽热区</div>
                 </div>
             </div>
         </div>

@@ -189,7 +189,7 @@ function createWindow() {
   win.webContents.on('paint', (event, dirty, image) => {
     // updateBitmap(dirty, image.getBitmap())
   })
-  win.webContents.setFrameRate(30)
+  // win.webContents.setFrameRate(30)
 
   win.on('close', (e) => {
     log.info('win close');
